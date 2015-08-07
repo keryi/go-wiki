@@ -16,8 +16,8 @@ type Page struct {
   Body []byte
 }
 
-var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
-var validPath = regexp.MustCompile("^/(edit/save/view)/([a-zA-Z0-9]+)$")
+var templates = template.Must(template.ParseFiles("tmpl/edit.html", "tmpl/view.html"))
+var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 var (
   addr = flag.Bool("addr", false, "find open address and print to final-port.txt")
 )
