@@ -6,6 +6,9 @@ import(
 	"net/http"
   "html/template"
   "regexp"
+  "net"
+  "log"
+  "flag"
 )
 
 type Page struct {
@@ -15,6 +18,9 @@ type Page struct {
 
 var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
 var validPath = regexp.MustCompile("^/(edit/save/view)/([a-zA-Z0-9]+)$")
+var (
+  addr = flag.Bool("addr", false, "find open address and print to final-port.txt")
+)
 
 func (p *Page) save() error {
   filename := p.Title + ".txt"
@@ -77,9 +83,28 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.Handl
 }
 
 func main() {
+  flag.Parse()
+
   http.HandleFunc("/view/", makeHandler(viewHandler))
   http.HandleFunc("/edit/", makeHandler(editHandler))
   http.HandleFunc("/save/", makeHandler(saveHandler))
+
+  if *addr {
+    l, err := net.Listen("tcp", "127.0.0.1:0")
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    err = ioutil.WriteFile("final-port.txt", []byte(l.Addr().String()), 0644)
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    s := &http.Server{}
+    s.Serve(l)
+    return
+  }
+
 	fmt.Printf("Server start at http://localhost:8080\n")
 	http.ListenAndServe(":8080", nil)
 }
